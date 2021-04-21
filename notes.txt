@@ -1,0 +1,78 @@
+download the requirements.txt to have all the modules, sqlalchemy is used in flask while django has its own 
+orm that is migrations are made their while for flask we need sqlalchemy, we'll use the
+pip install -r requirements.txt , it will download all modules, 
+
+we'll initiate the app and than create an object with the Api class of the flask_restfull module, 
+we use the flask and flask_restfull's api to define the app and use the Resource of flask_restfull to define
+a method that only returns, thus termed as a get method, serialization is used to create string object from the 
+dectionary passed in return so that it is treated a json object 
+
+we'll use a seprate test.py file in place of browser and use pip install requests to download the requests module 
+for the test.py file, to split the terminal in vs code run the main app and than press split option to get a cmd
+terminal. 
+
+to use a post method from test create a post method in the orignal resource to override the requests's post method
+we then run the requests.post form test to use the post method from the resource of main app, 
+
+to store data on server and get it back, we'll use data passing with the end point url,
+/hellowrld/<string:name>/<int:age> and retun it from the get method, but have to register it in the .add_resource
+
+Now we'll get data from a dictionary, we create a dictionary that can be called as a key value pair, 
+we created the dictionary in data_sample file and call it back in the retun statement, 
+
+For a video api we create a class of video with get method based on the video id refer it through a dictionary
+we'll use the requests.form to get additional data, we use a request parser of the flask_restfull, this request
+parser acts as an validator to the data being brought in, from flask_restfull import reqparse to get the parser
+
+in the main api we'll import the from flask_restfull import reqparse and call for args= reqparse.RequestParser()
+to parse the data passed, to get the data parsed we use the add_arguement method and in the put method of the class 
+video we'll use the parse_args() method to get them all in the put method 
+
+The difference between POST and PUT is that PUT requests are idempotent. That is, calling the same PUT request 
+multiple times will always produce the same result.In contrast, calling a POST request repeatedly have 
+side effects of creating the same resource multiple times.
+
+POST is always for creating a resource ( does not matter if it was duplicated )
+PUT is for checking if resource is exists then update , else create new resource
+PATCH is always for update a resource
+
+in test we'll do request.put(BASE,'/video',{"name":"xyx","likes":12,"views":123}) and pass it through the reqparse
+and create an entry in the videos dict and same get it back.
+
+to avoid crashing of code if id doesnt exist we'll create a function, we used this fucntion in the get method 
+to check wether the videos dictionary has the video or not 
+
+Using SQLAlchemy , created app.config['SQLALCHEMY_DATABASE_URI']='mysql://root:root@localhost/flask_apil' and
+db=SQLAlchemy(app), but first created the database in the mysql shell by create database flask_apil,
+created the db_config.py to create a seprate module for establishing the model for the db instance as a class
+with all Columns(not column) and used create_all() for the first time, run the app and than the db.config to 
+create the table in the mysql database, check by show tables; and show columns from VideoModel; to verify, circular
+import error are resolved by importing the db from rest_api after initiating it in the main rest_api, another trick
+is Instead of using :
+
+from db_config import VideoModel
+[...]
+foo = ReporterProfile()
+You can use:
+
+import db_config
+[...]
+foo = db_config.VideoModel()
+
+resource_feilds and marshalling required to serialize objects of video model, we import fields and marshal_with
+from flask flask_restfull, we created a dictionary of fields and used the marshal_with decorator on the methods
+of video class in main rest_api, 
+result=VideoModel.query.filter_by(id=video_id).first() to get the data where filter can be any arg and first()
+is to get the first hit caught in case of collision, 
+
+video=VideoModel(id=video_id,name=args["name"],views=args["views"],likes=args["likes"]) and
+db.session.add(video) and db.session.commit() to get the data to be placed on to the database 
+in put we place a check on repeating id by the get query returning true or we can use try catch as well
+
+In case of patch we create a new video_update_args=reqparse.RequestParser() object and its method of add_arguement will remove
+the required=True, so the parser places a None on the empty data arguments, we use the session.commit() to update the data base 
+-->issue db_config.VideoModel.query.filter_by(id=video_id).first() will return a sqlalchemy.orm.query.Query
+    that will not be editable so we have to move arround, db.session.query(db_config.VideoModel).filter_by(id=video_id).first()
+    will be a database instance so db.session.commit() will work 
+    https://stackoverflow.com/questions/29194926/python-flask-db-session-commit-is-not-working
+
